@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Which Shadow and Bone Character Are You?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .welcome-screen, .quiz-screen, .result-screen {
+            display: none;
+        }
+
+        .welcome-screen.active, .quiz-screen.active, .result-screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .welcome-text {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            font-size: 0.9em;
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .option-label:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateX(5px);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 15px;
+            margin-top: 3px;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            accent-color: #ffd700;
+        }
+
+        .option-label input[type="radio"]:checked + span {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            transition: width 0.3s ease;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #ff6b6b, #ff8787);
+            color: white;
+        }
+
+        .btn-restart:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .result-screen h2 {
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .result-description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+            line-height: 1.8;
+            font-size: 1.05em;
+            margin-bottom: 30px;
+        }
+
+        .score-breakdown {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .score-item:last-child {
+            border-bottom: none;
+        }
+
+        .score-name {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .score-points {
+            color: #fff;
+        }
+
+        .skipped-questions {
+            text-align: center;
+            font-size: 0.9em;
+            color: #ffcc00;
+            margin-top: 20px;
+        }
+
+        .hack-input {
+            position: fixed;
+            bottom: -9999px;
+        }
+
+        .banana-result {
+            font-size: 1.2em;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-header h2 {
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .page-header h3 {
+            font-size: 1.2em;
+            color: #ffd700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .page-header p {
+            padding: 10px 20px;
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #e0e0e0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="hackInput" class="hack-input" placeholder="Type _hack here...">
+    
+    <div class="page-header">
+        <h2>Shadow and Bone Character Quiz SSR Project</h2>
+        <p>--------------- By Leo Katz ---------------</p>
+        <h3>Step into the world of Ravka to find the character you most resemble!</h3>
+        <p>
+            Bellow is both the personality quiz for Shadow and Bone and an explaination of my thinking process when creating the personalities for the characters and the quiz. I also included 
+        </p>
+    </div>
+    
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="welcome-screen active">
+            <h1>🗡️ Which Shadow and Bone Character Are You? 🗡️</h1>
+            <p class="welcome-text">
+                Discover which Shadow and Bone character you are most like! You will answer 8 questions that will determine what character you resemble the most. Remember to answer the questions honestly and have fun! 
+            </p>
+            <div class="button-group">
+                <button class="btn-start" onclick="startQuiz()">Start Quiz</button>
+            </div>
+            <p style="font-size: 0.8em; text-align: center; margin-top: 20px; color: #aaa;">
+                💡 Tip: Try typing in 
+            </p>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="quiz-screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div id="quizContent"></div>
+            <div class="button-group">
+                <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Next Question</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="result-screen">
+            <h2 id="resultCharacter"></h2>
+            <div id="resultDescription" class="result-description"></div>
+            <div class="score-breakdown" id="scoreBreakdown"></div>
+            <div id="skippedQuestionsInfo" class="skipped-questions"></div>
+            <div class="button-group">
+                <button class="btn-restart" onclick="restartQuiz()">Take Quiz Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quiz = {
+            title: 'Which Shadow and Bone Character Are You?',
+            questions: [
+                {
+                    text: 'Your friend is in major trouble. What is your immediate reaction?',
+                    options: [
+                        { choice: 'Do whatever it takes to save them, even if it means stepping into danger yourself.', points: 2 },
+                        { choice: 'Use your unique talents, connections, or charm to secure them a safe escape.', points: 2 },
+                        { choice: 'Drop everything, track them down, and protect them at all costs.', points: 2 },
+                        { choice: 'Take swift, ruthless action against the source of the problem to eliminate the threat entirely.', points: 2 },
+                    ]
+                },
+                {
+                    text: 'When faced with a massive, life-altering challenge, how do you respond?',
+                    options: [
+                        { choice: 'Feel overwhelmed and reluctant at first, but ultimately rise to the occasion to do what is right.', points: 3 },
+                        { choice: 'Adapt to your circumstances, trying to keep the peace and remain valuable to those around you.', points: 3 },
+                        { choice: 'Rely on your instincts, grit, and practical skills to push through the hardship.', points: 3 },
+                        { choice: 'Intensely strategize, seeing the challenge as an opportunity to change the world your way.', points: 3 },
+                    ]
+                },
+                {
+                    text: 'How do you handle feelings of betrayal by someone you trusted?',
+                    options: [
+                        { choice: 'It breaks your heart, but you forgive them if they show genuine remorse and desire for redemption.', points: 2 },
+                        { choice: 'You are deeply hurt, but you might keep your head down and bide your time until the moment is right.', points: 2 },
+                        { choice: 'You confront them honestly and fight for the relationship if they are truly important to you.', points: 2 },
+                        { choice: 'You never forgive them. Betrayal is a threat that must be met with severe consequences.', points: 2 },
+                    ]
+                },
+                {
+                    text: 'What do you value most in life?',
+                    options: [
+                        { choice: 'Finding your inner strength and using it to protect the innocent.', points: 3 },
+                        { choice: 'Beauty, close friendships, and a comfortable place in the world.', points: 3 },
+                        { choice: 'Simple, grounding connections and the freedom to enjoy them without obligations.', points: 3 },
+                        { choice: 'Power, control, and a legacy that outlasts you.', points: 3 },
+                    ]
+                },
+                {
+                    text: 'Your ideal sanctuary would be:',
+                    options: [
+                        { choice: 'A place where you are free to be yourself without the weight of the world\'s expectations.', points: 2 },
+                        { choice: 'A safe, luxurious environment filled with laughter, gossip, and good company.', points: 2 },
+                        { choice: 'Anywhere out in the wild, as long as you are with the people you love.', points: 2 },
+                        { choice: 'A secure empire built on your own terms, where you call all the shots.', points: 2 },
+                    ]
+                },
+                {
+                    text: 'What is your favorite color?',
+                    options: [
+                        { choice: 'Yellow.', points: 1 },
+                        { choice: 'Pink.', points: 1 },
+                        { choice: 'Green', points: 1 },
+                        { choice: 'Black', points: 1 },
+                    ]
+                },
+                {
+                    text: 'What is your preferred type of food?',
+                    options: [
+                        { choice: 'A plain, homecooked meal.', points: 1 },
+                        { choice: 'Fancy sweets and other delicate foods.', points: 1 },
+                        { choice: 'A simple snack for on the move/in the wilderness.', points: 1 },
+                        { choice: 'A large, extravagant feast.', points: 1 },
+                    ]
+                },
+                {
+                    text: 'What do you enjoy to do in your free time?',
+                    options: [
+                        { choice: 'Play board games or read a book.', points: 1 },
+                        { choice: 'Try on new clothes and put on makeup with friends.', points: 1 },
+                        { choice: 'Spend time in nature with a friend or alone.', points: 1 },
+                        { choice: 'Focus on planning your future.', points: 1 },
+                    ]
+                }
+            ],
+            scores: {
+                Alina_Starkov: 0,
+                Genya_Safin: 0,
+                Mal_Oretsev: 0,
+                The_Darkling: 0,
+                banana: 0
+            },
+            skippedQs: 0,
+            currentQuestion: 0
+        };
+
+        const results = {
+            Alina_Starkov: {
+                name: 'Alina Starkov',
+                description: 'You are Alina Starkov.\n\nYou are defined by a strong humility and a fierce desire to protect those you care about. Often feeling like an outsider, there is still a deep, resilient part of you that always tries to do the right thing. Despite being talented, you have trouble overcoming your own self doubts and fears, though you persevere in the end.'
+            },
+            Genya_Safin: {
+                name: 'Genya Safin',
+                description: 'You are Genya Safin.\n\nYou are a gentle and kind person with an unmatched elegance and resilience. You are empathic and use your talents to help others around you. You possess a strong sense of morality and are a loyal friend, but you may be intoxicated by a luxurious or better life.'
+            },
+            Mal_Oretsev: {
+                name: 'Mal Oretsev',
+                description: 'You are Mal Oretsev.\n\nYou are a loyal, grounded, and protective individual who cares deeply for your friends. You take risks for those you love, and have a strong connection to nature. You also have a tendency to forge ahead, which can help you find your way through unknown areas of life.'
+            },
+            The_Darkling: {
+                name: 'The Darkling',
+                description: 'You are The Darkling.\n\nAs the Darkling, you possess a strong, ambitious individual who works hard to reshape the world into what you think is best. You control others by giving them a purpose, yet you yourself may be isolated by your elevated status, finding yourself carrying a massive burden you cannot possibly hold.'
+            },
+            banana: {
+                name: '🍌 BANANA 🍌',
+                description: '🍌 🍌 🍌 ! banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana banana 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌 🍌'
+            }
+        };
+
+        function startQuiz() {
+            document.querySelector('.welcome-screen').classList.remove('active');
+            document.querySelector('.quiz-screen').classList.add('active');
+            displayQuestion();
+            setupHackInput();
+        }
+
+        function displayQuestion() {
+            const question = quiz.questions[quiz.currentQuestion];
+            const progressPercent = ((quiz.currentQuestion + 1) / quiz.questions.length) * 100;
+            
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+
+            let html = `
+                <div class="question-container">
+                    <div class="question-number">Question ${quiz.currentQuestion + 1} of ${quiz.questions.length}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+            `;
+
+            question.options.forEach((option, index) => {
+                html += `
+                    <label class="option-label">
+                        <input type="radio" name="answer" value="${index}" onchange="enableNextButton()">
+                        <span>${option.choice}</span>
+                    </label>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('quizContent').innerHTML = html;
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function enableNextButton() {
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            
+            if (selected) {
+                const choiceIndex = parseInt(selected.value);
+                const points = quiz.questions[quiz.currentQuestion].options[choiceIndex].points;
+
+                if (choiceIndex === 0) {
+                    quiz.scores.Alina_Starkov += points;
+                } else if (choiceIndex === 1) {
+                    quiz.scores.Genya_Safin += points;
+                } else if (choiceIndex === 2) {
+                    quiz.scores.Mal_Oretsev += points;
+                } else {
+                    quiz.scores.The_Darkling += points;
+                }
+
+                quiz.currentQuestion++;
+
+                if (quiz.currentQuestion < quiz.questions.length) {
+                    displayQuestion();
+                } else {
+                    showResult();
+                }
+            }
+        }
+
+        function showResult() {
+            const maxScore = Math.max(...Object.values(quiz.scores));
+            const winners = Object.keys(quiz.scores).filter(key => quiz.scores[key] === maxScore);
+            const winner = winners[0];
+
+            document.querySelector('.quiz-screen').classList.remove('active');
+            document.querySelector('.result-screen').classList.add('active');
+
+            const resultData = results[winner];
+            document.getElementById('resultCharacter').textContent = resultData.name;
+            document.getElementById('resultDescription').innerHTML = resultData.description.replace(/\n/g, '<br>');
+
+            let scoreHtml = '<h3 style="color: #ffd700; margin-bottom: 15px;">Your Scores:</h3>';
+            scoreHtml += `<div class="score-item"><span class="score-name">Alina Starkov:</span> <span class="score-points">${quiz.scores.Alina_Starkov} points</span></div>`;
+            scoreHtml += `<div class="score-item"><span class="score-name">Genya Safin:</span> <span class="score-points">${quiz.scores.Genya_Safin} points</span></div>`;
+            scoreHtml += `<div class="score-item"><span class="score-name">Mal Oretsev:</span> <span class="score-points">${quiz.scores.Mal_Oretsev} points</span></div>`;
+            scoreHtml += `<div class="score-item"><span class="score-name">The Darkling:</span> <span class="score-points">${quiz.scores.The_Darkling} points</span></div>`;
+            
+            if (quiz.scores.banana > 0) {
+                scoreHtml += `<div class="score-item"><span class="score-name">🍌 Banana:</span> <span class="score-points">${quiz.scores.banana} points</span></div>`;
+            }
+
+            document.getElementById('scoreBreakdown').innerHTML = scoreHtml;
+
+            if (quiz.skippedQs > 0) {
+                document.getElementById('skippedQuestionsInfo').innerHTML = `⏭️ Skipped Questions: ${quiz.skippedQs}`;
+            }
+        }
+
+        function restartQuiz() {
+            quiz.scores = {
+                Alina_Starkov: 0,
+                Genya_Safin: 0,
+                Mal_Oretsev: 0,
+                The_Darkling: 0,
+                banana: 0
+            };
+            quiz.skippedQs = 0;
+            quiz.currentQuestion = 0;
+
+            document.querySelector('.result-screen').classList.remove('active');
+            document.querySelector('.welcome-screen').classList.add('active');
+        }
+
+        function setupHackInput() {
+            const hackInput = document.getElementById('hackInput');
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key.match(/^[a-zA-Z_]$/)) {
+                    hackInput.focus();
+                }
+            });
+
+            hackInput.addEventListener('input', (e) => {
+                if (hackInput.value.toLowerCase().includes('_hack')) {
+                    triggerHack();
+                    hackInput.value = '';
+                }
+            });
+        }
+
+        function triggerHack() {
+            const charChoice = prompt("*HACK ACTIVATED*\n\nType the exact character you want to be:\n- Alina_Starkov\n- Genya_Safin\n- Mal_Oretsev\n- The_Darkling\n- BANANA");
+            
+            if (charChoice) {
+                const validChars = ['Alina_Starkov', 'Genya_Safin', 'Mal_Oretsev', 'The_Darkling', 'BANANA'];
+                
+                if (validChars.includes(charChoice)) {
+                    quiz.scores[charChoice.toLowerCase()] = 999;
+                    
+                    document.querySelector('.quiz-screen').classList.remove('active');
+                    showResult();
+                } else {
+                    alert('Invalid character name! Please try again.');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
